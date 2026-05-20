@@ -212,6 +212,9 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
     <div id="waitlist-cards"></div>
   </div>
   <div id="tab-manage" class="section">
+    <div style="margin-bottom:12px;text-align:right">
+      <button onclick="resetToDefault()" style="background:#FFE5E5;border:none;border-radius:10px;padding:8px 14px;font-family:'Jua',sans-serif;font-size:.8rem;color:var(--red);cursor:pointer">🔄 기본 메뉴로 초기화</button>
+    </div>
     <div class="add-form">
       <h3 id="add-title">➕ 추가</h3>
             <div class="mform-row">
@@ -352,7 +355,7 @@ async function selectTheme(key){
   if(itemsUnsub) itemsUnsub();
   itemsUnsub = fbOnValue(fbRef(fbDB,`themes/${KEY}/items`), snap=>{
     const val=snap.val();
-    if(val){
+    if(val && Object.keys(val).length>0){
       items=Object.values(val);
       nextId=Math.max(...items.map(i=>i.id),0)+1;
     } else {
@@ -683,15 +686,44 @@ function addItem(){
   const cat=document.getElementById('new-cat').value;
   if(!name){showToast('⚠️ 이름을 입력해 주세요!');return;}
   if(!selEmoji){showToast('⚠️ 아이콘을 선택해 주세요!');return;}
-  const newItem={id:nextId++,emoji:selEmoji,name,price,cat};
-  fbSet(fbRef(fbDB,`themes/${KEY}/items/${newItem.id}`),newItem);
-  document.getElementById('new-name').value='';document.getElementById('new-price').value='';
-  // 이미지 탭 초기화
-  selImgData=null;
-  const prev=document.getElementById('emoji-img-preview');
-  const ph=document.getElementById('emoji-img-placeholder');
-  prev.classList.remove('show'); ph.style.display='flex';
-  showToast('✅ 추가됐어요!');
+
+  function saveItem(emojiVal){
+    const newItem={id:nextId++,emoji:emojiVal,name,price,cat};
+    fbSet(fbRef(fbDB,`themes/${KEY}/items/${newItem.id}`),newItem)
+      .then(()=>showToast('✅ 추가됐어요!'))
+      .catch(()=>showToast('⚠️ 저장 실패! 이미지가 너무 클 수 있어요'));
+    document.getElementById('new-name').value='';
+    document.getElementById('new-price').value='';
+    selImgData=null;
+    const prev=document.getElementById('emoji-img-preview');
+    const ph=document.getElementById('emoji-img-placeholder');
+    if(prev) {prev.classList.remove('show'); prev.src='';}
+    if(ph) ph.style.display='flex';
+  }
+
+  // 이미지인 경우 작게 압축 후 저장
+  if(selEmoji && selEmoji.startsWith('data:')){
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const MAX=80;
+      const ratio=Math.min(MAX/img.width, MAX/img.height);
+      canvas.width=img.width*ratio;
+      canvas.height=img.height*ratio;
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      const compressed=canvas.toDataURL('image/jpeg',0.7);
+      saveItem(compressed);
+    };
+    img.src=selEmoji;
+  } else {
+    saveItem(selEmoji);
+  }
+}
+function resetToDefault(){
+  if(!confirm('기본 메뉴로 초기화할까요? 추가한 메뉴는 모두 사라져요!'))return;
+  const obj={}; T.items.forEach(i=>obj[i.id]=i);
+  fbSet(fbRef(fbDB,`themes/${KEY}/items`),obj);
+  showToast('🔄 기본 메뉴로 초기화됐어요!');
 }
 function deleteItem(id){
   if(!confirm('삭제할까요?'))return;
