@@ -686,9 +686,11 @@ function confirmOrder(){
   const now=new Date();
   const num=orderNum++;
   const o={id:Date.now(),number:num,selectedItems:si,patientName:'',total,status:'waiting',time:`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`};
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o);
-  else { orders.push(o); renderStatusBar(); }
+  // 로컬 즉시 반영
+  orders.push(o); renderStatusBar();
   cart={}; updateFab(); renderCart();
+  // Firebase에도 저장
+  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}`),300);
   showToast('🔔 접수됐어요!'); showTab('menu');
@@ -723,8 +725,10 @@ function submitReception(){
   const now=new Date();
   const num=orderNum++;
   const o={id:Date.now(),number:num,patientName:name,selectedItems:si,memo,total,status:'waiting',time:`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`};
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o);
-  else { orders.push(o); renderStatusBar(); if(T.type==='reception') renderWaitlist(); }
+  // 로컬 즉시 반영
+  orders.push(o); renderStatusBar(); renderWaitlist();
+  // Firebase에도 저장
+  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   document.getElementById('patient-name').value='';
   document.getElementById('patient-memo').value='';
   checkedItems=new Set(); renderItemsGrid();
@@ -763,14 +767,15 @@ function renderWaitlist(){
 
 // ── 상태 변경 ──
 function setStatus(id,status){
+  // 로컬 즉시 반영
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  if(status==='done') orders=orders.filter(x=>x.id!==id);
+  else o.status=status;
+  renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  // Firebase에도 저장
   if(fbDB){
-    if(status==='done') fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`));
-    else fbUpdate(fbRef(fbDB,`themes/${KEY}/orders/${id}`),{status});
-  } else {
-    const o=orders.find(x=>x.id===id); if(!o) return;
-    if(status==='done') orders=orders.filter(x=>x.id!==id);
-    else o.status=status;
-    renderStatusBar(); if(T.type==='reception') renderWaitlist();
+    if(status==='done') fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
+    else fbUpdate(fbRef(fbDB,`themes/${KEY}/orders/${id}`),{status}).catch(e=>console.error(e));
   }
   // 팝업: 접수형은 making(진료시작)에서, 일반형은 ready에서
   const popOn=T.type==='reception'?'making':'ready';
@@ -786,14 +791,15 @@ function setStatus(id,status){
   }
 }
 function cancelOrder(id){
-  if(fbDB) fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`));
-  else { orders=orders.filter(o=>o.id!==id); renderStatusBar(); if(T.type==='reception') renderWaitlist(); }
+  orders=orders.filter(o=>o.id!==id); renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  if(fbDB) fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
   showToast('🗑️ 취소됐어요');
 }
 function clearDone(){
   const done=orders.filter(o=>o.status==='ready'||o.status==='done');
-  if(fbDB) done.forEach(o=>fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`)));
-  else { orders=orders.filter(o=>o.status!=='ready'&&o.status!=='done'); renderStatusBar(); if(T.type==='reception') renderWaitlist(); }
+  orders=orders.filter(o=>o.status!=='ready'&&o.status!=='done');
+  renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  if(fbDB) done.forEach(o=>fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`)).catch(e=>console.error(e)));
   showToast('✅ 완료 비웠어요');
 }
 function closeReady(){document.getElementById('ready-banner').classList.remove('show');}
