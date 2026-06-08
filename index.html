@@ -19,6 +19,31 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);min-height:100vh
 .theme-card:hover{transform:translateY(-4px);}.theme-card:active{transform:scale(.96);}
 .tc-icon{font-size:2.6rem;}.tc-name{font-family:'Jua',sans-serif;font-size:.95rem;margin-top:7px;color:#5C3A1E;}
 
+/* 테마 추가 모달 */
+#add-theme-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px;}
+#add-theme-modal.show{display:flex;}
+.atm-box{background:white;border-radius:24px;padding:24px 20px;width:100%;max-width:420px;margin:auto;animation:popIn .3s ease;}
+.atm-box h2{font-family:'Jua',sans-serif;color:#5C3A1E;font-size:1.2rem;margin-bottom:16px;}
+.atm-row{margin-bottom:12px;}
+.atm-row label{display:block;font-size:.82rem;color:#8B5E3C;margin-bottom:4px;font-weight:700;}
+.atm-row input,.atm-row select{width:100%;padding:10px 13px;border:2px solid #FFE4C4;border-radius:10px;font-family:'Nanum Gothic',sans-serif;font-size:.95rem;outline:none;background:#FFF8F0;}
+.atm-row input:focus,.atm-row select:focus{border-color:#8B5E3C;}
+.color-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;}
+.color-swatch{width:100%;aspect-ratio:1;border-radius:10px;border:3px solid transparent;cursor:pointer;transition:transform .15s;}
+.color-swatch:hover{transform:scale(1.1);}
+.color-swatch.selected{border-color:#333;transform:scale(1.1);}
+.atm-btns{display:flex;gap:10px;margin-top:16px;}
+.atm-btns button{flex:1;padding:13px;border:none;border-radius:12px;font-family:'Jua',sans-serif;font-size:.95rem;cursor:pointer;}
+.atm-cancel{background:#FFE4C4;color:#8B5E3C;}
+.atm-save{color:white;background:linear-gradient(135deg,#8B5E3C,#5C3A1E);}
+.copy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px;}
+.copy-btn{padding:10px 8px;border:2px solid #FFE4C4;border-radius:10px;background:#FFF8F0;font-family:'Jua',sans-serif;font-size:.82rem;color:#5C3A1E;cursor:pointer;text-align:center;transition:all .15s;}
+.copy-btn:hover{border-color:#8B5E3C;background:#FFE4C4;}
+.copy-btn.selected{border-color:#8B5E3C;background:#FFE4C4;}
+.add-theme-fab{display:block;margin:16px auto 0;padding:13px 28px;background:linear-gradient(135deg,#8B5E3C,#5C3A1E);color:white;border:none;border-radius:50px;font-family:'Jua',sans-serif;font-size:1rem;cursor:pointer;box-shadow:0 4px 14px rgba(139,94,60,.3);}
+.theme-card-wrap{position:relative;}
+.theme-del-btn{position:absolute;top:6px;right:6px;background:#FFE5E5;border:none;border-radius:50%;width:22px;height:22px;font-size:.7rem;color:#E05A5A;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
 /* 앱 */
 #app{display:none;}
 header{color:white;text-align:center;padding:18px 16px 14px;position:relative;overflow:hidden;}
@@ -165,7 +190,7 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
 .order-fab{position:fixed;bottom:22px;right:18px;color:white;border:none;border-radius:50px;padding:13px 20px;font-family:'Jua',sans-serif;font-size:.95rem;cursor:pointer;display:flex;align-items:center;gap:7px;transition:transform .2s;z-index:200;background:linear-gradient(135deg,var(--accent),#E05A3A);box-shadow:0 6px 18px rgba(255,140,105,.4);}
 .order-fab:hover{transform:scale(1.05);}
 .order-fab .count{background:white;color:var(--accent);border-radius:50%;width:22px;height:22px;font-size:.8rem;display:flex;align-items:center;justify-content:center;}
-.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(30px);background:#333;color:white;padding:11px 22px;border-radius:50px;font-family:'Jua',sans-serif;font-size:.9rem;opacity:0;pointer-events:none;transition:all .3s;z-index:300;}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(30px);background:#333;color:white;padding:11px 22px;border-radius:50px;font-family:'Jua',sans-serif;font-size:.9rem;opacity:0;pointer-events:none;transition:all .3s;z-index:700;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
@@ -194,6 +219,47 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
   <h1>🎭 우리반 역할놀이</h1>
   <p>오늘은 어떤 놀이를 할까요?</p>
   <div class="theme-grid" id="theme-grid"></div>
+  <button class="add-theme-fab" onclick="openAddThemeModal()">➕ 새 놀이 추가</button>
+</div>
+
+<!-- 새 놀이 추가 모달 -->
+<div id="add-theme-modal">
+  <div class="atm-box">
+    <h2 id="atm-title">🎭 새 놀이 추가</h2>
+
+    <div class="atm-row">
+      <label>기존 놀이 복사하기 (선택)</label>
+      <div class="copy-grid" id="copy-grid"></div>
+    </div>
+
+    <div class="atm-row">
+      <label>놀이 아이콘</label>
+      <input type="text" id="atm-icon" maxlength="2" placeholder="예: 🏖️" style="font-size:1.4rem;text-align:center">
+    </div>
+    <div class="atm-row">
+      <label>놀이 이름</label>
+      <input type="text" id="atm-name" placeholder="예: 해변 카페">
+    </div>
+    <div class="atm-row">
+      <label>한 줄 설명</label>
+      <input type="text" id="atm-sub" placeholder="예: 어서오세요! 🌊">
+    </div>
+    <div class="atm-row">
+      <label>놀이 유형</label>
+      <select id="atm-type">
+        <option value="normal">🛒 주문형 (카페·식당·마트 등)</option>
+        <option value="reception">📋 접수형 (병원·약국 등)</option>
+      </select>
+    </div>
+    <div class="atm-row">
+      <label>테마 색상</label>
+      <div class="color-row" id="color-row"></div>
+    </div>
+    <div class="atm-btns">
+      <button class="atm-cancel" onclick="closeAddThemeModal()">취소</button>
+      <button class="atm-save" onclick="saveNewTheme()">✅ 추가!</button>
+    </div>
+  </div>
 </div>
 
 <!-- 메인 앱 -->
@@ -453,18 +519,136 @@ function initFirebase(){
 }
 
 // ── 테마 선택 화면 ──
+// 커스텀 테마 로컬 저장
+function getCustomThemes(){ try{return JSON.parse(localStorage.getItem('custom_themes')||'{}');}catch(e){return {};} }
+function saveCustomThemes(obj){ localStorage.setItem('custom_themes',JSON.stringify(obj)); }
+
 function renderThemeScreen(){
+  const custom=getCustomThemes();
+  const allThemes={...THEMES,...custom};
   document.getElementById('theme-grid').innerHTML=
-    Object.entries(THEMES).map(([k,t])=>
-      `<div class="theme-card" onclick="selectTheme('${k}')">
-        <div class="tc-icon">${t.name.split(' ')[0]}</div>
-        <div class="tc-name">${t.name.split(' ').slice(1).join(' ')}</div>
-      </div>`
+    Object.entries(allThemes).map(([k,t])=>{
+      const isCustom=!!custom[k];
+      const delBtn=isCustom?`<button class="theme-del-btn" onclick="deleteCustomTheme('${k}',event)" title="삭제">✕</button>`:'';
+      return `<div class="theme-card-wrap">
+        <div class="theme-card" onclick="selectTheme('${k}')">
+          <div class="tc-icon">${t.name.split(' ')[0]}</div>
+          <div class="tc-name">${t.name.split(' ').slice(1).join(' ')}</div>
+        </div>${delBtn}
+      </div>`;
+    }).join('');
+}
+
+function deleteCustomTheme(key, e){
+  e.stopPropagation();
+  if(!confirm('이 놀이를 삭제할까요?')) return;
+  const custom=getCustomThemes();
+  delete custom[key];
+  saveCustomThemes(custom);
+  renderThemeScreen();
+}
+
+
+
+// ── 새 놀이 추가 모달 ──
+const THEME_COLORS=[
+  {c1:'#E53935',c2:'#B71C1C',bg:'#FFF5F5',warm:'#FFCDD2',label:'빨강'},
+  {c1:'#E65100',c2:'#BF360C',bg:'#FFF8F5',warm:'#FFD0B0',label:'주황'},
+  {c1:'#F9A825',c2:'#E65100',bg:'#FFFDF0',warm:'#FFE082',label:'노랑'},
+  {c1:'#2E7D32',c2:'#1B5E20',bg:'#F1FFF1',warm:'#C8F0C8',label:'초록'},
+  {c1:'#1565C0',c2:'#0D3C7A',bg:'#F0F4FF',warm:'#C8D8FF',label:'파랑'},
+  {c1:'#6A3FA8',c2:'#3D1F70',bg:'#F8F0FF',warm:'#E8D0FF',label:'보라'},
+  {c1:'#AD1457',c2:'#6A0136',bg:'#FFF5FA',warm:'#FFD6EC',label:'분홍'},
+  {c1:'#4E342E',c2:'#3E2723',bg:'#FFF8F0',warm:'#D7CCC8',label:'갈색'},
+];
+let selColorIdx=0, copiedKey=null;
+
+function openAddThemeModal(){
+  copiedKey=null; selColorIdx=0;
+  document.getElementById('atm-icon').value='';
+  document.getElementById('atm-name').value='';
+  document.getElementById('atm-sub').value='';
+  document.getElementById('atm-type').value='normal';
+
+  // 복사 버튼 목록
+  const allThemes={...THEMES,...getCustomThemes()};
+  document.getElementById('copy-grid').innerHTML=
+    Object.entries(allThemes).map(([k,t])=>
+      `<div class="copy-btn" id="copy-btn-${k}" onclick="selectCopy('${k}')">${t.name}</div>`
     ).join('');
+
+  // 색상 선택
+  document.getElementById('color-row').innerHTML=
+    THEME_COLORS.map((c,i)=>
+      `<div class="color-swatch ${i===0?'selected':''}" style="background:${c.c1}" onclick="selectColor(${i})" title="${c.label}"></div>`
+    ).join('');
+
+  document.getElementById('add-theme-modal').classList.add('show');
+}
+
+function closeAddThemeModal(){
+  document.getElementById('add-theme-modal').classList.remove('show');
+}
+
+function selectCopy(key){
+  copiedKey=copiedKey===key?null:key;
+  document.querySelectorAll('.copy-btn').forEach(b=>b.classList.remove('selected'));
+  if(copiedKey){
+    document.getElementById('copy-btn-'+key).classList.add('selected');
+    // 복사된 테마 정보 자동 채우기
+    const allThemes={...THEMES,...getCustomThemes()};
+    const t=allThemes[key];
+    const nameParts=t.name.split(' ');
+    document.getElementById('atm-icon').value=nameParts[0];
+    document.getElementById('atm-name').value=nameParts.slice(1).join(' ');
+    document.getElementById('atm-sub').value=t.sub||'';
+    document.getElementById('atm-type').value=t.type||'normal';
+  }
+}
+
+function selectColor(idx){
+  selColorIdx=idx;
+  document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
+}
+
+function saveNewTheme(){
+  const icon=document.getElementById('atm-icon').value.trim();
+  const name=document.getElementById('atm-name').value.trim();
+  const sub=document.getElementById('atm-sub').value.trim();
+  const type=document.getElementById('atm-type').value;
+  if(!icon){showToast('⚠️ 아이콘을 입력해 주세요!');return;}
+  if(!name){showToast('⚠️ 이름을 입력해 주세요!');return;}
+
+  const col=THEME_COLORS[selColorIdx];
+  const newKey='custom_'+Date.now();
+
+  // 복사 기반이면 원본 테마 데이터 가져오기, 아니면 유형별 기본값
+  const allThemes={...THEMES,...getCustomThemes()};
+  const base=copiedKey?{...allThemes[copiedKey]}:(type==='normal'?{...THEMES.cafe}:{...THEMES.hospital});
+
+  const newTheme={
+    ...base,
+    name:`${icon} ${name}`,
+    sub:sub||`${name} 역할놀이를 시작해요!`,
+    type,
+    c1:col.c1, c2:col.c2, bg:col.bg, warm:col.warm,
+    // 복사 기반이면 메뉴도 복사, 아니면 기본 메뉴 유지
+    defaultItems: copiedKey ? [...(base.defaultItems||[])] : [...(base.defaultItems||[])],
+  };
+
+  const custom=getCustomThemes();
+  custom[newKey]=newTheme;
+  saveCustomThemes(custom);
+  closeAddThemeModal();
+  renderThemeScreen();
+  showToast('✅ '+newTheme.name+' 추가됐어요!');
 }
 
 async function selectTheme(key){
-  KEY=key; T=THEMES[key];
+  KEY=key;
+  const custom=getCustomThemes();
+  T=THEMES[key]||custom[key];
+  if(!T){showToast('⚠️ 테마를 찾을 수 없어요');return;}
 
   // 1. UI 즉시 적용
   applyThemeUI();
@@ -569,6 +753,7 @@ function buildTabs(){
     tabs.innerHTML=`
       <button class="tab-btn active" style="background:${T.c1};color:white" onclick="showTab('menu')"><span>${T.tiMenu}</span>${T.ttMenu}</button>
       <button class="tab-btn" onclick="showTab('cart')"><span>${T.tiCart}</span>${T.ttCart}</button>
+      <button class="tab-btn" onclick="showTab('waitlist')"><span>📋</span>주문현황</button>
       <button class="tab-btn" onclick="showTab('manage')"><span>✏️</span>관리</button>`;
   } else {
     tabs.innerHTML=`
@@ -590,7 +775,7 @@ function showTab(tab){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active');b.style.background='';b.style.color='';});
   document.getElementById('tab-'+tab).classList.add('active');
-  const list=T.type==='normal'?['menu','cart','manage']:['reception','waitlist','manage'];
+  const list=T.type==='normal'?['menu','cart','waitlist','manage']:['reception','waitlist','manage'];
   const idx=list.indexOf(tab);
   if(idx>=0){const b=document.querySelectorAll('.tab-btn')[idx];b.classList.add('active');b.style.background=T.c1;b.style.color='white';}
   if(tab==='menu') renderMenu();
@@ -608,6 +793,23 @@ function emojiHTML(e,size='2.2rem'){
 
 // ── 상태바 ──
 function renderStatusBar(){
+  // 주문현황 탭 뱃지 업데이트 (일반형)
+  if(T && T.type==='normal'){
+    const activeCount=orders.filter(o=>o.status!=='done').length;
+    const tabs=document.querySelectorAll('.tab-btn');
+    if(tabs[2]){
+      const existing=tabs[2].querySelector('.tab-badge');
+      if(existing) existing.remove();
+      if(activeCount>0){
+        const badge=document.createElement('span');
+        badge.className='tab-badge';
+        badge.textContent=activeCount;
+        badge.style.cssText='position:absolute;top:4px;right:4px;background:var(--accent);color:white;font-size:.6rem;min-width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Jua,sans-serif;';
+        tabs[2].style.position='relative';
+        tabs[2].appendChild(badge);
+      }
+    }
+  }
   const sc=document.getElementById('status-scroll');
   const active=orders.filter(o=>o.status!=='done');
   if(!active.length){sc.innerHTML=`<div class="status-empty">${T?T.name.split(' ')[0]:''}  대기 없음</div>`;return;}
@@ -693,7 +895,7 @@ function confirmOrder(){
   if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}`),300);
-  showToast('🔔 접수됐어요!'); showTab('menu');
+  showToast('🔔 접수됐어요!'); showTab('waitlist');
 }
 
 // ── 접수형 ──
