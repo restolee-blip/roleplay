@@ -11,6 +11,20 @@
 body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);min-height:100vh;}
 
 /* 테마선택 */
+#room-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#FFF8F0,#FFE4C4);}
+#room-screen h1{font-family:'Jua',sans-serif;font-size:1.8rem;color:#5C3A1E;margin-bottom:6px;text-align:center;}
+#room-screen p{color:#8B5E3C;font-size:.88rem;margin-bottom:28px;text-align:center;}
+.room-box{background:white;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 8px 30px rgba(139,94,60,.12);}
+.room-box h2{font-family:'Jua',sans-serif;color:#5C3A1E;font-size:1.1rem;margin-bottom:14px;text-align:center;}
+.room-input{width:100%;padding:14px;border:3px solid #FFE4C4;border-radius:14px;font-family:'Jua',sans-serif;font-size:1.4rem;text-align:center;outline:none;background:#FFF8F0;letter-spacing:4px;text-transform:uppercase;}
+.room-input:focus{border-color:#8B5E3C;}
+.room-btn{width:100%;margin-top:12px;padding:15px;background:linear-gradient(135deg,#8B5E3C,#5C3A1E);color:white;border:none;border-radius:14px;font-family:'Jua',sans-serif;font-size:1.1rem;cursor:pointer;transition:transform .18s;}
+.room-btn:hover{transform:translateY(-2px);}
+.room-new-btn{width:100%;margin-top:8px;padding:12px;background:none;border:2px dashed #FFE4C4;border-radius:14px;font-family:'Jua',sans-serif;font-size:.95rem;color:#8B5E3C;cursor:pointer;transition:background .15s;}
+.room-new-btn:hover{background:#FFF8F0;}
+.room-code-display{background:#FFF8F0;border:2px solid #FFE4C4;border-radius:12px;padding:10px;margin-top:16px;text-align:center;}
+.room-code-display span{font-family:'Jua',sans-serif;font-size:.8rem;color:#8B5E3C;display:block;margin-bottom:4px;}
+.room-code-display strong{font-family:'Jua',sans-serif;font-size:1.6rem;color:#5C3A1E;letter-spacing:4px;}
 #theme-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#FFF8F0,#FFE4C4);}
 #theme-screen h1{font-family:'Jua',sans-serif;font-size:1.8rem;color:#5C3A1E;margin-bottom:6px;}
 #theme-screen p{color:#8B5E3C;font-size:.9rem;margin-bottom:24px;}
@@ -214,10 +228,26 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
 </head>
 <body>
 
-<!-- 테마 선택 -->
-<div id="theme-screen">
+<!-- 룸 코드 입력 화면 -->
+<div id="room-screen">
   <h1>🎭 우리반 역할놀이</h1>
-  <p>오늘은 어떤 놀이를 할까요?</p>
+  <p>방 코드로 같은 반끼리만 연결돼요!</p>
+  <div class="room-box">
+    <h2>🔑 방 코드 입력</h2>
+    <input class="room-input" id="room-input" maxlength="6" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()">
+    <button class="room-btn" onclick="joinRoom()">✅ 입장하기</button>
+    <button class="room-new-btn" onclick="createRoom()">➕ 새 방 만들기</button>
+    <div class="room-code-display" id="saved-room-display" style="display:none">
+      <span>📌 마지막으로 사용한 방</span>
+      <strong id="saved-room-code"></strong>
+    </div>
+  </div>
+</div>
+
+<!-- 테마 선택 -->
+<div id="theme-screen" style="display:none">
+  <h1>🎭 우리반 역할놀이</h1>
+  <p>🔑 방 코드: <strong id="current-room-label" style="font-family:'Jua',sans-serif;color:#5C3A1E"></strong> &nbsp;<button onclick="changeRoom()" style="font-family:'Jua',sans-serif;font-size:.75rem;background:#FFE4C4;border:none;border-radius:20px;padding:3px 10px;color:#8B5E3C;cursor:pointer">변경</button></p>
   <div class="theme-grid" id="theme-grid"></div>
   <button class="add-theme-fab" onclick="openAddThemeModal()">➕ 새 놀이 추가</button>
 </div>
@@ -326,9 +356,13 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
           <button class="etab" onclick="switchETab('type')">⌨️ 직접입력</button>
           <button class="etab" onclick="switchETab('img')">🖼️ 이미지</button>
         </div>
-        <div id="etab-pick"><div class="emoji-picker" id="emoji-picker"></div></div>
+        <div id="etab-pick">
+          <input type="text" id="emoji-search" placeholder="🔍 이모지 검색 (예: 커피, 꽃, 동물)" oninput="searchEmoji(this.value)"
+            style="width:100%;padding:8px 12px;border:2px solid var(--warm);border-radius:9px;font-family:'Nanum Gothic',sans-serif;font-size:.9rem;outline:none;background:var(--bg);margin-bottom:8px;">
+          <div class="emoji-picker" id="emoji-picker"></div>
+        </div>
         <div id="etab-type" style="display:none">
-          <input class="emoji-direct-input" id="emoji-direct" maxlength="4" placeholder="이모지 또는 텍스트" oninput="selEmoji=this.value||'☕';updateIconPreview()">
+          <input class="emoji-direct-input" id="emoji-direct" maxlength="4" placeholder="😊 여기를 눌러 이모지 입력" inputmode="text" oninput="selEmoji=this.value||'☕';updateIconPreview()">
           <div style="font-size:.75rem;color:var(--c1);margin-top:5px;opacity:.7">이모지 하나 또는 짧은 텍스트</div>
         </div>
         <div id="etab-img" style="display:none">
@@ -472,14 +506,78 @@ const THEMES = {
     defaultItems:[{id:1,emoji:'🌹',name:'장미 한 송이',price:2000,cat:'낱꽃'},{id:2,emoji:'🌻',name:'해바라기',price:1500,cat:'낱꽃'},{id:3,emoji:'💐',name:'봄꽃 꽃다발',price:10000,cat:'꽃다발'},{id:4,emoji:'🌷',name:'튤립 꽃다발',price:12000,cat:'꽃다발'},{id:5,emoji:'🪴',name:'작은 화분',price:8000,cat:'화분'},{id:6,emoji:'🎁',name:'기념일 꽃박스',price:25000,cat:'이벤트'}]}
 };
 
-const EMOJIS=['☕','🧃','🍵','🧋','🍫','🍓','🍰','🧁','🍩','🥐','🍞','🥪','🍪','🍦','🍕','🍔','🍜','🍚','🌹','🌷','🌻','💐','🪴','🎁','🍎','🍌','🥦','🥕','💊','🩹','💉','🩺','🌡️','🤒','🤢','🤕','🎫','🧳','✈️','🛍️','🌈','😊','🤗','🎵','🌸','💜','🌿','⚗️','🫙','🧴'];
+const EMOJI_DB=[
+  {e:'☕',k:'커피 음료 카페'},  {e:'🧃',k:'주스 음료 과일'},  {e:'🍵',k:'차 음료 녹차'},  {e:'🧋',k:'버블티 음료 스무디'},
+  {e:'🍫',k:'초콜릿 과자 디저트'},  {e:'🍓',k:'딸기 과일'},  {e:'🍰',k:'케이크 디저트'},  {e:'🧁',k:'컵케이크 디저트'},
+  {e:'🍩',k:'도넛 디저트'},  {e:'🥐',k:'크루아상 빵 푸드'},  {e:'🍞',k:'빵 푸드'},  {e:'🥪',k:'샌드위치 푸드'},
+  {e:'🍪',k:'쿠키 과자 디저트'},  {e:'🍦',k:'아이스크림 디저트'},  {e:'🍕',k:'피자 음식'},  {e:'🍔',k:'햄버거 음식'},
+  {e:'🍜',k:'라면 국수 음식'},  {e:'🍚',k:'밥 쌀 음식'},  {e:'🍣',k:'초밥 일식'},  {e:'🍱',k:'도시락 음식'},
+  {e:'🌮',k:'타코 음식'},  {e:'🥗',k:'샐러드 채소'},  {e:'🍳',k:'계란 후라이'},  {e:'🥞',k:'팬케이크 디저트'},
+  {e:'🌹',k:'장미 꽃'},  {e:'🌷',k:'튤립 꽃'},  {e:'🌻',k:'해바라기 꽃'},  {e:'💐',k:'꽃다발 꽃'},
+  {e:'🪴',k:'화분 식물'},  {e:'🌸',k:'벚꽃 꽃'},  {e:'🍀',k:'클로버 식물'},  {e:'🌿',k:'허브 식물'},
+  {e:'🎁',k:'선물 이벤트'},  {e:'🎀',k:'리본 선물'},  {e:'🎉',k:'파티 축하'},  {e:'⭐',k:'별 특별'},
+  {e:'🍎',k:'사과 과일'},  {e:'🍌',k:'바나나 과일'},  {e:'🍊',k:'오렌지 과일'},  {e:'🍇',k:'포도 과일'},
+  {e:'🥦',k:'브로콜리 채소'},  {e:'🥕',k:'당근 채소'},  {e:'🌽',k:'옥수수 채소'},  {e:'🍅',k:'토마토 채소'},
+  {e:'💊',k:'약 알약 약국'},  {e:'🩹',k:'반창고 밴드 치료'},  {e:'💉',k:'주사 주사기'},  {e:'🩺',k:'청진기 의사'},
+  {e:'🌡️',k:'체온계 온도'},  {e:'🤒',k:'아픈 열 감기'},  {e:'🤢',k:'메스꺼움 배탈'},  {e:'🤕',k:'다침 부상'},
+  {e:'🏥',k:'병원 의료'},  {e:'💊',k:'약 처방'},  {e:'🧴',k:'로션 스킨케어'},  {e:'🫙',k:'항아리 용기'},
+  {e:'🎫',k:'티켓 입장권'},  {e:'🧳',k:'여행가방 짐'},  {e:'✈️',k:'비행기 여행'},  {e:'🛍️',k:'쇼핑백 마트'},
+  {e:'🌈',k:'무지개 감정'},  {e:'😊',k:'웃음 기쁨 감정'},  {e:'🤗',k:'안아줘 위로 감정'},  {e:'🎵',k:'음악 노래'},
+  {e:'💜',k:'보라 하트 마음'},  {e:'❤️',k:'빨간 하트 사랑'},  {e:'💙',k:'파란 하트'},  {e:'💚',k:'초록 하트'},
+  {e:'🐶',k:'강아지 동물'},  {e:'🐱',k:'고양이 동물'},  {e:'🐰',k:'토끼 동물'},  {e:'🐻',k:'곰 동물'},
+  {e:'🦁',k:'사자 동물'},  {e:'🐸',k:'개구리 동물'},  {e:'🐧',k:'펭귄 동물'},  {e:'🦋',k:'나비 곤충'},
+  {e:'🚗',k:'자동차 차'},  {e:'🚕',k:'택시 차'},  {e:'🚌',k:'버스 대중교통'},  {e:'🚂',k:'기차 열차'},
+  {e:'🏠',k:'집 건물'},  {e:'🏫',k:'학교 건물'},  {e:'🏪',k:'가게 마트'},  {e:'⚽',k:'축구 공 스포츠'},
+];
+const EMOJIS=EMOJI_DB.map(x=>x.e);
 
 // ── 전역 상태 ──
 let T=null, KEY='', items=[], orders=[], cart={}, orderNum=1;
+let ROOM=''; // 방 코드
 let selEmoji='☕', checkedItems=new Set(), curETab='pick', selImgData=null;
 let fbDB=null, fbRef=null, fbSet=null, fbOnValue=null, fbRemove=null, fbUpdate=null;
 let ordersUnsub=null, itemsUnsub=null;
 const _deviceId=localStorage.getItem('_did')||(()=>{const id='d'+Date.now();localStorage.setItem('_did',id);return id;})();
+
+
+// ── 룸 코드 ──
+function generateRoomCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function initRoomScreen(){
+  const saved=localStorage.getItem('last_room');
+  if(saved){
+    document.getElementById('saved-room-display').style.display='block';
+    document.getElementById('saved-room-code').textContent=saved;
+    document.getElementById('room-input').value=saved;
+  }
+}
+
+function joinRoom(){
+  const code=document.getElementById('room-input').value.trim().toUpperCase();
+  if(code.length<4){showRoomToast('⚠️ 방 코드를 입력해 주세요!');return;}
+  ROOM=code;
+  localStorage.setItem('last_room',code);
+  document.getElementById('room-screen').style.display='none';
+  document.getElementById('theme-screen').style.display='flex';
+  renderThemeScreen();
+}
+
+function createRoom(){
+  const code=generateRoomCode();
+  document.getElementById('room-input').value=code;
+  showRoomToast('🎉 새 방 코드: '+code);
+}
+
+function showRoomToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
 
 // ── Firebase 비동기 초기화 ──
 function initFirebase(){
@@ -546,7 +644,7 @@ function deleteCustomTheme(key, e){
   const custom=getCustomThemes();
   delete custom[key];
   saveCustomThemes(custom);
-  renderThemeScreen();
+  initRoomScreen();
 }
 
 
@@ -641,12 +739,13 @@ function saveNewTheme(){
   custom[newKey]=newTheme;
   saveCustomThemes(custom);
   closeAddThemeModal();
-  renderThemeScreen();
+  initRoomScreen();
   showToast('✅ '+newTheme.name+' 추가됐어요!');
 }
 
 async function selectTheme(key){
   KEY=key;
+  document.getElementById('current-room-label').textContent=ROOM;
   const custom=getCustomThemes();
   T=THEMES[key]||custom[key];
   if(!T){showToast('⚠️ 테마를 찾을 수 없어요');return;}
@@ -675,7 +774,7 @@ async function selectTheme(key){
   if(fbDB){
     // 아이템 리스너
     if(itemsUnsub) itemsUnsub();
-    itemsUnsub=fbOnValue(fbRef(fbDB,`themes/${KEY}/items`),snap=>{
+    itemsUnsub=fbOnValue(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/items`),snap=>{
       const val=snap.val();
       if(val && Object.keys(val).length>0){
         items=Object.values(val);
@@ -683,14 +782,14 @@ async function selectTheme(key){
         // Firebase 비어있으면 기본값 저장
         items=T.defaultItems.map(i=>({...i}));
         const obj={}; items.forEach(i=>obj[i.id]=i);
-        fbSet(fbRef(fbDB,`themes/${KEY}/items`),obj);
+        fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/items`),obj);
       }
       renderMenu(); renderItemsGrid(); renderManage();
     });
 
     // 주문 리스너
     if(ordersUnsub) ordersUnsub();
-    ordersUnsub=fbOnValue(fbRef(fbDB,`themes/${KEY}/orders`),snap=>{
+    ordersUnsub=fbOnValue(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders`),snap=>{
       const val=snap.val();
       orders=val?Object.values(val).sort((a,b)=>a.id-b.id):[];
       orderNum=orders.length?Math.max(...orders.map(o=>o.number||0),0)+1:1;
@@ -699,7 +798,7 @@ async function selectTheme(key){
     });
 
     // 소리 신호 리스너 — 다른 기기의 소리 감지
-    const soundRef=fbRef(fbDB,`themes/${KEY}/sound`);
+    const soundRef=fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`);
     fbOnValue(soundRef, snap=>{
       const val=snap.val();
       if(!val) return;
@@ -784,6 +883,13 @@ function buildTabs(){
   }
 }
 
+function changeRoom(){
+  if(itemsUnsub){itemsUnsub();itemsUnsub=null;}
+  if(ordersUnsub){ordersUnsub();ordersUnsub=null;}
+  document.getElementById('app').style.display='none';
+  document.getElementById('theme-screen').style.display='none';
+  document.getElementById('room-screen').style.display='flex';
+}
 function goBack(){
   if(itemsUnsub){itemsUnsub();itemsUnsub=null;}
   if(ordersUnsub){ordersUnsub();ordersUnsub=null;}
@@ -913,11 +1019,11 @@ function confirmOrder(){
   orders.push(o); renderStatusBar();
   cart={}; updateFab(); renderCart();
   // Firebase에도 저장
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
+  if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}`),300);
   // 다른 기기에 소리 신호 전송
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'order',num,name:'',time:Date.now(),sender:_deviceId});
+  if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'order',num,name:'',time:Date.now(),sender:_deviceId});
   showToast('🔔 접수됐어요!'); showTab('waitlist');
 }
 
@@ -953,14 +1059,14 @@ function submitReception(){
   // 로컬 즉시 반영
   orders.push(o); renderStatusBar(); renderWaitlist();
   // Firebase에도 저장
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
+  if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   document.getElementById('patient-name').value='';
   document.getElementById('patient-memo').value='';
   checkedItems=new Set(); renderItemsGrid();
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}. ${name} 님`),300);
   // 다른 기기에 소리 신호 전송
-  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'order',num,name,time:Date.now(),sender:_deviceId});
+  if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'order',num,name,time:Date.now(),sender:_deviceId});
   showToast('✅ '+name+' 접수됐어요!'); showTab('waitlist');
 }
 
@@ -1006,8 +1112,8 @@ function setStatus(id,status){
 
   // Firebase에도 저장
   if(fbDB){
-    if(status==='done') fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
-    else fbUpdate(fbRef(fbDB,`themes/${KEY}/orders/${id}`),{status}).catch(e=>console.error(e));
+    if(status==='done') fbRemove(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
+    else fbUpdate(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${id}`),{status}).catch(e=>console.error(e));
   }
 
   // 팝업: 접수형은 making(진료시작)에서, 일반형은 ready에서
@@ -1021,19 +1127,19 @@ function setStatus(id,status){
     const txt=oName?`${oNum}${base}. ${oName} 님`:`${oNum}${base}`;
     setTimeout(()=>speak(txt),500);
     // 다른 기기에 소리 신호 전송
-    if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'ready',num:oNum,name:oName,time:Date.now(),sender:_deviceId});
+    if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'ready',num:oNum,name:oName,time:Date.now(),sender:_deviceId});
   }
 }
 function cancelOrder(id){
   orders=orders.filter(o=>o.id!==id); renderStatusBar(); renderWaitlist();
-  if(fbDB) fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
+  if(fbDB) fbRemove(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
   showToast('🗑️ 취소됐어요');
 }
 function clearDone(){
   const done=orders.filter(o=>o.status==='ready'||o.status==='done');
   orders=orders.filter(o=>o.status!=='ready'&&o.status!=='done');
   renderStatusBar(); renderWaitlist();
-  if(fbDB) done.forEach(o=>fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`)).catch(e=>console.error(e)));
+  if(fbDB) done.forEach(o=>fbRemove(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/orders/${o.id}`)).catch(e=>console.error(e)));
   showToast('✅ 완료 비웠어요');
 }
 function closeReady(){document.getElementById('ready-banner').classList.remove('show');}
@@ -1043,7 +1149,8 @@ function switchETab(tab){
   curETab=tab;
   ['pick','type','img'].forEach(t=>{document.getElementById('etab-'+t).style.display=t===tab?'block':'none';});
   document.querySelectorAll('.etab').forEach((b,i)=>b.classList.toggle('active',['pick','type','img'][i]===tab));
-  if(tab==='pick') buildEmojiPicker();
+  if(tab==='pick'){document.getElementById('emoji-search').value='';buildEmojiPicker();}
+  if(tab==='type'){setTimeout(()=>document.getElementById('emoji-direct').focus(),100);}
 }
 function onImageUpload(input){
   const file=input.files[0]; if(!file) return;
@@ -1070,11 +1177,17 @@ function updateIconPreview(){
   const el=document.getElementById('icon-preview');
   el.innerHTML=emojiHTML(selEmoji,'1.8rem');
 }
-function buildEmojiPicker(){
-  document.getElementById('emoji-picker').innerHTML=EMOJIS.map(e=>
-    `<button class="ep-btn ${e===selEmoji?'selected':''}" onclick="selEmoji='${e}';buildEmojiPicker();updateIconPreview()">${e}</button>`
-  ).join('');
+function buildEmojiPicker(list){
+  const arr=list||EMOJI_DB;
+  document.getElementById('emoji-picker').innerHTML=arr.length
+    ? arr.map(x=>`<button class="ep-btn ${x.e===selEmoji?'selected':''}" onclick="selEmoji='${x.e}';buildEmojiPicker();updateIconPreview()">${x.e}</button>`).join('')
+    : '<div style="grid-column:1/-1;text-align:center;font-size:.85rem;color:var(--c1);padding:12px;opacity:.6">검색 결과가 없어요</div>';
   updateIconPreview();
+}
+function searchEmoji(q){
+  if(!q.trim()){buildEmojiPicker();return;}
+  const filtered=EMOJI_DB.filter(x=>x.k.includes(q)||x.e.includes(q));
+  buildEmojiPicker(filtered);
 }
 function addItem(){
   const name=document.getElementById('new-name').value.trim();
@@ -1089,7 +1202,7 @@ function addItem(){
   showToast('✅ 추가됐어요!');
   // Firebase에도 저장 (연결된 경우)
   if(fbDB){
-    fbSet(fbRef(fbDB,`themes/${KEY}/items/${newItem.id}`),newItem)
+    fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/items/${newItem.id}`),newItem)
       .catch(e=>showToast('⚠️ 저장 실패: '+e.message));
   }
   document.getElementById('new-name').value='';
@@ -1111,7 +1224,7 @@ function resetToDefault(){
   // Firebase에도 저장 (연결된 경우)
   if(fbDB){
     const obj={}; defaultItems.forEach(i=>obj[i.id]=i);
-    fbSet(fbRef(fbDB,`themes/${KEY}/items`),obj).catch(e=>console.error(e));
+    fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/items`),obj).catch(e=>console.error(e));
   }
 }
 function deleteItem(id){
@@ -1121,7 +1234,7 @@ function deleteItem(id){
   renderMenu(); renderItemsGrid(); renderManage();
   showToast('🗑️ 삭제됐어요');
   // Firebase에서도 삭제 (연결된 경우)
-  if(fbDB) fbRemove(fbRef(fbDB,`themes/${KEY}/items/${id}`));
+  if(fbDB) fbRemove(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/items/${id}`));
 }
 function renderManage(){
   buildEmojiPicker();
@@ -1194,7 +1307,7 @@ function speak(text){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── 시작 ──
-renderThemeScreen();
+initRoomScreen();
 </script>
 </body>
 </html>
