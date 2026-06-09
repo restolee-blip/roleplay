@@ -88,10 +88,10 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
 .category-label{font-family:'Jua',sans-serif;color:var(--c2);font-size:1.05rem;margin:18px 0 9px;display:flex;align-items:center;gap:8px;}
 .category-label::after{content:'';flex:1;height:2px;background:linear-gradient(to right,var(--warm),transparent);}
 .menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;}
-.menu-card{background:white;border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.07);cursor:pointer;transition:transform .18s,box-shadow .18s;border:2px solid transparent;position:relative;overflow:hidden;}
+.menu-card{background:white;border-radius:16px;padding:16px 10px 14px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.07);cursor:pointer;transition:transform .18s,box-shadow .18s;border:2px solid transparent;position:relative;overflow:hidden;}
 .menu-card:hover{transform:translateY(-3px);}.menu-card:active{transform:scale(.96);}
 .menu-card.selected{border-color:var(--accent);background:#FFF3EE;}
-.menu-card .emoji{font-size:2.2rem;line-height:1;}.menu-card .name{font-family:'Jua',sans-serif;font-size:.92rem;margin:5px 0 3px;color:var(--c2);}.menu-card .price{font-size:.8rem;color:var(--c1);font-weight:700;}
+.menu-card .emoji{font-size:5rem;line-height:1;display:block;margin-bottom:2px;}.menu-card .emoji img{width:80px;height:80px;border-radius:10px;object-fit:cover;}.menu-card .name{font-family:'Jua',sans-serif;font-size:1rem;margin:8px 0 4px;color:var(--c2);}.menu-card .price{font-size:.85rem;color:var(--c1);font-weight:700;}
 .menu-card .badge{position:absolute;top:7px;right:7px;background:var(--accent);color:white;font-size:.6rem;font-family:'Jua',sans-serif;padding:2px 7px;border-radius:20px;}
 
 /* 장바구니 */
@@ -970,7 +970,7 @@ function renderWaitlist(){
   document.getElementById('cnt-making').textContent=orders.filter(o=>o.status==='making').length;
   document.getElementById('cnt-ready').textContent=orders.filter(o=>o.status==='ready').length;
   const el=document.getElementById('waitlist-cards');
-  if(!active.length){el.innerHTML=`<div class="empty-msg"><div class="big">${T.tiWait}</div>대기 중인 분이 없어요!</div>`;return;}
+  if(!active.length){el.innerHTML=`<div class="empty-msg"><div class="big">📋</div>대기 중인 주문이 없어요!</div>`;return;}
   const sorted=[...active].sort((a,b)=>({waiting:0,making:1,ready:2}[a.status]-{waiting:0,making:1,ready:2}[b.status]));
   el.innerHTML=sorted.map(o=>{
     const pillTxt={waiting:'🟠 '+T.chipWait,making:'🔵 '+T.chipMake,ready:'🟢 '+T.chipReady}[o.status];
@@ -979,55 +979,60 @@ function renderWaitlist(){
     let receipt='',actions='';
     if(o.status==='ready'){
       const rows=(o.selectedItems||[]).map(i=>`<div class="receipt-row"><span>${i.name}</span><span>${i.price>0?i.price.toLocaleString()+'원':'무료'}</span></div>`).join('');
-      receipt=`<div class="wc-receipt"><h4>${T.receiptTitle}</h4>${rows}<div class="receipt-total"><span>${T.totalReceiptLbl}</span><span>${o.total.toLocaleString()}원</span></div></div>`;
-      actions=`<div class="wc-actions"><button class="action-btn btn-cancel" style="flex:1" onclick="setStatus(${o.id},'done')">${T.finalBtn}</button></div>`;
+      receipt=`<div class="wc-receipt"><h4>${T.receiptTitle||'📋 주문 내역'}</h4>${rows}<div class="receipt-total"><span>${T.totalReceiptLbl||'💰 합계'}</span><span>${o.total.toLocaleString()}원</span></div></div>`;
+      actions=`<div class="wc-actions"><button class="action-btn btn-cancel" style="flex:1" onclick="setStatus(${o.id},'done')">${T.finalBtn||'✅ 완료'}</button></div>`;
     } else if(o.status==='waiting'){
       actions=`<div class="wc-actions"><button class="action-btn btn-making" onclick="setStatus(${o.id},'making')">${T.btnMake}</button><button class="action-btn btn-cancel" onclick="cancelOrder(${o.id})">✕ 취소</button></div>`;
     } else if(o.status==='making'){
       actions=`<div class="wc-actions"><button class="action-btn btn-ready" onclick="setStatus(${o.id},'ready')">${T.btnReady}</button></div>`;
     }
     return `<div class="wait-card s-${o.status}">
-      <div class="wc-top"><div class="wc-num">${o.number}</div><div class="wc-info"><div class="wc-name">👤 ${o.patientName}</div><div class="wc-time">⏰ ${o.time}</div></div><span class="status-pill ${o.status}">${pillTxt}</span></div>
+      <div class="wc-top"><div class="wc-num">${o.number}</div><div class="wc-info"><div class="wc-name">${o.patientName?'👤 '+o.patientName:''}</div><div class="wc-time">⏰ ${o.time}</div></div><span class="status-pill ${o.status}">${pillTxt}</span></div>
       <div class="wc-tags">${tags}</div>${memo}${receipt}${actions}</div>`;
   }).join('');
 }
 
 // ── 상태 변경 ──
 function setStatus(id,status){
-  // 로컬 즉시 반영
+  // 주문 먼저 찾기 (done 처리 전에)
   const o=orders.find(x=>x.id===id); if(!o) return;
+  const oNum=o.number, oName=o.patientName||'';
+
+  // 로컬 즉시 반영
   if(status==='done') orders=orders.filter(x=>x.id!==id);
   else o.status=status;
-  renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  renderStatusBar();
+  renderWaitlist(); // 일반형·접수형 모두 반영
+
   // Firebase에도 저장
   if(fbDB){
     if(status==='done') fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
     else fbUpdate(fbRef(fbDB,`themes/${KEY}/orders/${id}`),{status}).catch(e=>console.error(e));
   }
+
   // 팝업: 접수형은 making(진료시작)에서, 일반형은 ready에서
   const popOn=T.type==='reception'?'making':'ready';
   if(status===popOn){
-    const o=orders.find(x=>x.id===id)||{number:'',patientName:''};
-    document.getElementById('rb-num').textContent='🎫 '+o.number+'번';
-    document.getElementById('rb-pname').textContent=o.patientName?'👤 '+o.patientName:'';
+    document.getElementById('rb-num').textContent='🎫 '+oNum+'번';
+    document.getElementById('rb-pname').textContent=oName?'👤 '+oName:'';
     document.getElementById('ready-banner').classList.add('show');
     playBell();
     const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
-    const txt=o.patientName?`${o.number}${base}. ${o.patientName} 님`:`${o.number}${base}`;
+    const txt=oName?`${oNum}${base}. ${oName} 님`:`${oNum}${base}`;
     setTimeout(()=>speak(txt),500);
     // 다른 기기에 소리 신호 전송
-    if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'ready',num:o.number,name:o.patientName||'',time:Date.now(),sender:_deviceId});
+    if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'ready',num:oNum,name:oName,time:Date.now(),sender:_deviceId});
   }
 }
 function cancelOrder(id){
-  orders=orders.filter(o=>o.id!==id); renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  orders=orders.filter(o=>o.id!==id); renderStatusBar(); renderWaitlist();
   if(fbDB) fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${id}`)).catch(e=>console.error(e));
   showToast('🗑️ 취소됐어요');
 }
 function clearDone(){
   const done=orders.filter(o=>o.status==='ready'||o.status==='done');
   orders=orders.filter(o=>o.status!=='ready'&&o.status!=='done');
-  renderStatusBar(); if(T.type==='reception') renderWaitlist();
+  renderStatusBar(); renderWaitlist();
   if(fbDB) done.forEach(o=>fbRemove(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`)).catch(e=>console.error(e)));
   showToast('✅ 완료 비웠어요');
 }
