@@ -694,7 +694,7 @@ async function selectTheme(key){
       orders=val?Object.values(val).sort((a,b)=>a.id-b.id):[];
       orderNum=orders.length?Math.max(...orders.map(o=>o.number||0),0)+1:1;
       renderStatusBar();
-      if(T.type==='reception') renderWaitlist();
+      renderWaitlist(); // 일반형·접수형 모두 실시간 반영
     });
   }
 }
