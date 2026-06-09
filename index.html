@@ -479,6 +479,7 @@ let T=null, KEY='', items=[], orders=[], cart={}, orderNum=1;
 let selEmoji='☕', checkedItems=new Set(), curETab='pick', selImgData=null;
 let fbDB=null, fbRef=null, fbSet=null, fbOnValue=null, fbRemove=null, fbUpdate=null;
 let ordersUnsub=null, itemsUnsub=null;
+const _deviceId=localStorage.getItem('_did')||(()=>{const id='d'+Date.now();localStorage.setItem('_did',id);return id;})();
 
 // ── Firebase 비동기 초기화 ──
 function initFirebase(){
@@ -694,7 +695,27 @@ async function selectTheme(key){
       orders=val?Object.values(val).sort((a,b)=>a.id-b.id):[];
       orderNum=orders.length?Math.max(...orders.map(o=>o.number||0),0)+1:1;
       renderStatusBar();
-      renderWaitlist(); // 일반형·접수형 모두 실시간 반영
+      renderWaitlist();
+    });
+
+    // 소리 신호 리스너 — 다른 기기의 소리 감지
+    const soundRef=fbRef(fbDB,`themes/${KEY}/sound`);
+    fbOnValue(soundRef, snap=>{
+      const val=snap.val();
+      if(!val) return;
+      const now=Date.now();
+      // 3초 이내 신호만 처리 (오래된 신호 무시)
+      if(now - val.time > 3000) return;
+      // 내가 보낸 신호는 무시
+      if(val.sender===_deviceId) return;
+      if(val.type==='order'){
+        playAcceptSound();
+        setTimeout(()=>speak(`${val.num}${T.acceptSpeak||'번 주문이 접수됐습니다'}`+(val.name?`. ${val.name} 님`:'')),300);
+      } else if(val.type==='ready'){
+        playBell();
+        const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
+        setTimeout(()=>speak(`${val.num}${base}`+(val.name?`. ${val.name} 님`:'')),500);
+      }
     });
   }
 }
@@ -895,6 +916,8 @@ function confirmOrder(){
   if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/orders/${o.id}`),o).catch(e=>console.error(e));
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}`),300);
+  // 다른 기기에 소리 신호 전송
+  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'order',num,name:'',time:Date.now(),sender:_deviceId});
   showToast('🔔 접수됐어요!'); showTab('waitlist');
 }
 
@@ -936,6 +959,8 @@ function submitReception(){
   checkedItems=new Set(); renderItemsGrid();
   playAcceptSound();
   setTimeout(()=>speak(`${num}${T.acceptSpeak}. ${name} 님`),300);
+  // 다른 기기에 소리 신호 전송
+  if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'order',num,name,time:Date.now(),sender:_deviceId});
   showToast('✅ '+name+' 접수됐어요!'); showTab('waitlist');
 }
 
@@ -990,6 +1015,8 @@ function setStatus(id,status){
     const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
     const txt=o.patientName?`${o.number}${base}. ${o.patientName} 님`:`${o.number}${base}`;
     setTimeout(()=>speak(txt),500);
+    // 다른 기기에 소리 신호 전송
+    if(fbDB) fbSet(fbRef(fbDB,`themes/${KEY}/sound`),{type:'ready',num:o.number,name:o.patientName||'',time:Date.now(),sender:_deviceId});
   }
 }
 function cancelOrder(id){
