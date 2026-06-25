@@ -105,7 +105,7 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
 .menu-card{background:white;border-radius:16px;padding:16px 10px 14px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.07);cursor:pointer;transition:transform .18s,box-shadow .18s;border:2px solid transparent;position:relative;overflow:hidden;}
 .menu-card:hover{transform:translateY(-3px);}.menu-card:active{transform:scale(.96);}
 .menu-card.selected{border-color:var(--accent);background:#FFF3EE;}
-.menu-card .emoji{font-size:5rem;line-height:1;display:block;margin-bottom:2px;}.menu-card .emoji img{width:80px;height:80px;border-radius:10px;object-fit:cover;}.menu-card .name{font-family:'Jua',sans-serif;font-size:1rem;margin:8px 0 4px;color:var(--c2);}.menu-card .price{font-size:.85rem;color:var(--c1);font-weight:700;}
+.menu-card .emoji{margin-bottom:6px;display:flex;align-items:center;justify-content:center;}.menu-card .emoji .emoji-circle{width:120px;height:120px;border-radius:50%;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:5.5rem;line-height:1;}.menu-card .emoji img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid var(--warm);}.menu-card .name{font-family:'Jua',sans-serif;font-size:1.25rem;margin:8px 0 4px;color:var(--c2);}.menu-card .price{font-size:.95rem;color:var(--c1);font-weight:700;}
 .menu-card .badge{position:absolute;top:7px;right:7px;background:var(--accent);color:white;font-size:.6rem;font-family:'Jua',sans-serif;padding:2px 7px;border-radius:20px;}
 
 /* 장바구니 */
@@ -282,6 +282,10 @@ header p{font-size:.78rem;opacity:.85;margin-top:3px;position:relative;}
       </select>
     </div>
     <div class="atm-row">
+      <label>메뉴 분류 <span style="font-size:.72rem;opacity:.65">(쉼표로 구분, 비우면 기본값)</span></label>
+      <input type="text" id="atm-cats" placeholder="예: 음료, 디저트, 간식">
+    </div>
+    <div class="atm-row">
       <label>테마 색상</label>
       <div class="color-row" id="color-row"></div>
     </div>
@@ -422,7 +426,7 @@ const THEMES = {
     orderLbl:'주문현황',orderBtn:'🔔 주문 완료!',fabIcon:'🛒',fabTxt:'주문보기',
     mIcon:'🔔',mTitle:'주문하시겠어요?',mConfirm:'네! 주문할게요',
     rbIcon:'🔔',rbTitle:'주문 나왔어요!',rbSub:'찾아가세요~ 😊',
-    readySpeak:'번 손님, 주문하신 음료 나왔습니다. 찾아가세요',acceptSpeak:'번 주문이 접수됐습니다',
+    readySpeak:'번 손님, 주문하신 음료 나왔습니다. 찾아가세요',readyTail:' 나왔습니다. 찾아가세요',readyHead:'번 손님, ',acceptSpeak:'번 주문이 접수됐습니다',
     chipWait:'접수됨',chipMake:'준비중',chipReady:'찾아가세요!',btnMake:'🔵 준비 시작',btnReady:'🔔 완료!',btnDone:'✅ 완료처리',
     addTitle:'➕ 새 메뉴 추가',lName:'메뉴 이름',lPrice:'가격(원)',listTitle:'📋 현재 메뉴 목록',
     cats:['음료','디저트','푸드','특별'],
@@ -466,7 +470,7 @@ const THEMES = {
     orderLbl:'결제현황',orderBtn:'💳 결제하기!',fabIcon:'🛒',fabTxt:'장바구니',
     mIcon:'💳',mTitle:'결제하시겠어요?',mConfirm:'네! 결제할게요',
     rbIcon:'🛍️',rbTitle:'영수증 나왔어요!',rbSub:'감사합니다~ 😊',
-    readySpeak:'번 고객님, 결제가 완료됐습니다. 물건을 가져가세요',acceptSpeak:'번 결제가 접수됐습니다',
+    readySpeak:'번 고객님, 결제가 완료됐습니다. 물건을 가져가세요',readyTail:' 결제가 완료됐습니다. 가져가세요',readyHead:'번 고객님, ',acceptSpeak:'번 결제가 접수됐습니다',
     chipWait:'결제대기',chipMake:'계산중',chipReady:'가져가세요!',btnMake:'💳 계산 시작',btnReady:'🛍️ 완료!',btnDone:'✅ 완료처리',
     addTitle:'➕ 새 상품 추가',lName:'상품 이름',lPrice:'가격(원)',listTitle:'📋 상품 목록',
     cats:['과일','채소','과자/음료','생필품'],
@@ -477,7 +481,7 @@ const THEMES = {
     orderLbl:'주문현황',orderBtn:'🔔 주문 완료!',fabIcon:'📝',fabTxt:'주문보기',
     mIcon:'🍽️',mTitle:'주문하시겠어요?',mConfirm:'네! 주문할게요',
     rbIcon:'🔔',rbTitle:'음식 나왔어요!',rbSub:'맛있게 드세요~ 😋',
-    readySpeak:'번 손님, 음식이 나왔습니다. 찾아가세요',acceptSpeak:'번 주문이 접수됐습니다',
+    readySpeak:'번 손님, 음식이 나왔습니다. 찾아가세요',readyTail:' 나왔습니다. 맛있게 드세요',readyHead:'번 손님, ',acceptSpeak:'번 주문이 접수됐습니다',
     chipWait:'주문접수',chipMake:'요리중',chipReady:'나왔어요!',btnMake:'👨‍🍳 요리 시작',btnReady:'🔔 완료!',btnDone:'✅ 완료처리',
     addTitle:'➕ 새 메뉴 추가',lName:'메뉴 이름',lPrice:'가격(원)',listTitle:'📋 현재 메뉴판',
     cats:['피자/파스타','한식','분식','음료/디저트'],
@@ -488,7 +492,7 @@ const THEMES = {
     orderLbl:'수속현황',orderBtn:'✅ 수속 완료!',fabIcon:'📋',fabTxt:'수속보기',
     mIcon:'🛫',mTitle:'수속하시겠어요?',mConfirm:'네! 수속할게요',
     rbIcon:'📢',rbTitle:'탑승 준비됐어요!',rbSub:'게이트로 이동하세요~ ✈️',
-    readySpeak:'번 고객님, 수속이 완료됐습니다. 게이트로 이동해 주세요',acceptSpeak:'번 수속이 접수됐습니다',
+    readySpeak:'번 고객님, 수속이 완료됐습니다. 게이트로 이동해 주세요',readyTail:' 수속이 완료됐습니다. 게이트로 이동해 주세요',readyHead:'번 고객님, ',acceptSpeak:'번 수속이 접수됐습니다',
     chipWait:'접수됨',chipMake:'처리중',chipReady:'탑승하세요!',btnMake:'🔄 처리 시작',btnReady:'📢 완료!',btnDone:'✅ 완료처리',
     addTitle:'➕ 새 서비스 추가',lName:'서비스 이름',lPrice:'요금(원)',listTitle:'📋 서비스 목록',
     cats:['탑승수속','면세점','식당','편의시설'],
@@ -499,7 +503,7 @@ const THEMES = {
     orderLbl:'주문현황',orderBtn:'💐 주문 완료!',fabIcon:'🛒',fabTxt:'주문보기',
     mIcon:'💐',mTitle:'주문하시겠어요?',mConfirm:'네! 주문할게요',
     rbIcon:'💐',rbTitle:'꽃다발 완성!',rbSub:'찾아가세요~ 🌸',
-    readySpeak:'번 고객님, 꽃다발이 완성됐습니다. 찾아가세요',acceptSpeak:'번 주문이 접수됐습니다',
+    readySpeak:'번 고객님, 꽃다발이 완성됐습니다. 찾아가세요',readyTail:' 완성됐습니다. 찾아가세요',readyHead:'번 고객님, ',acceptSpeak:'번 주문이 접수됐습니다',
     chipWait:'접수됨',chipMake:'포장중',chipReady:'찾아가세요!',btnMake:'🌿 포장 시작',btnReady:'💐 완료!',btnDone:'✅ 완료처리',
     addTitle:'➕ 새 꽃 추가',lName:'꽃 이름',lPrice:'가격(원)',listTitle:'📋 현재 꽃 목록',
     cats:['꽃다발','화분','낱꽃','이벤트'],
@@ -565,6 +569,8 @@ function joinRoom(){
   document.getElementById('room-screen').style.display='none';
   document.getElementById('theme-screen').style.display='flex';
   renderThemeScreen();
+  // Firebase 연결 후 커스텀 테마 동기화 시작
+  (async()=>{ if(!fbDB) await initFirebase(); startCustomThemesListener(); })();
 }
 
 function createRoom(){
@@ -618,9 +624,36 @@ function initFirebase(){
 }
 
 // ── 테마 선택 화면 ──
-// 커스텀 테마 로컬 저장
-function getCustomThemes(){ try{return JSON.parse(localStorage.getItem('custom_themes')||'{}');}catch(e){return {};} }
-function saveCustomThemes(obj){ localStorage.setItem('custom_themes',JSON.stringify(obj)); }
+// 커스텀 테마: 방(ROOM)별로 Firebase + 로컬 동기화
+let customThemes={};  // 현재 방의 커스텀 테마
+let customThemesUnsub=null;
+
+function getCustomThemes(){ return customThemes; }
+
+function saveCustomThemes(obj){
+  customThemes=obj;
+  // 로컬 백업 (방별)
+  localStorage.setItem('custom_themes_'+ROOM,JSON.stringify(obj));
+  // Firebase에 저장 (다른 기기 동기화)
+  if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/customThemes`),obj).catch(e=>console.error(e));
+}
+
+// 방 입장 시 커스텀 테마 Firebase 리스너 시작
+function startCustomThemesListener(){
+  // 로컬 백업 먼저 로드 (즉시 표시)
+  try{ customThemes=JSON.parse(localStorage.getItem('custom_themes_'+ROOM)||'{}'); }catch(e){ customThemes={}; }
+  renderThemeScreen();
+  // Firebase 실시간 리스너
+  if(fbDB){
+    if(customThemesUnsub) customThemesUnsub();
+    customThemesUnsub=fbOnValue(fbRef(fbDB,`rooms/${ROOM}/customThemes`),snap=>{
+      const val=snap.val();
+      customThemes=val||{};
+      localStorage.setItem('custom_themes_'+ROOM,JSON.stringify(customThemes));
+      renderThemeScreen();
+    });
+  }
+}
 
 function renderThemeScreen(){
   const custom=getCustomThemes();
@@ -641,10 +674,10 @@ function renderThemeScreen(){
 function deleteCustomTheme(key, e){
   e.stopPropagation();
   if(!confirm('이 놀이를 삭제할까요?')) return;
-  const custom=getCustomThemes();
+  const custom={...getCustomThemes()};
   delete custom[key];
   saveCustomThemes(custom);
-  initRoomScreen();
+  renderThemeScreen();
 }
 
 
@@ -668,6 +701,7 @@ function openAddThemeModal(){
   document.getElementById('atm-name').value='';
   document.getElementById('atm-sub').value='';
   document.getElementById('atm-type').value='normal';
+  document.getElementById('atm-cats').value='';
 
   // 복사 버튼 목록
   const allThemes={...THEMES,...getCustomThemes()};
@@ -702,6 +736,7 @@ function selectCopy(key){
     document.getElementById('atm-name').value=nameParts.slice(1).join(' ');
     document.getElementById('atm-sub').value=t.sub||'';
     document.getElementById('atm-type').value=t.type||'normal';
+    document.getElementById('atm-cats').value=(t.cats||[]).join(', ');
   }
 }
 
@@ -725,21 +760,35 @@ function saveNewTheme(){
   const allThemes={...THEMES,...getCustomThemes()};
   const base=copiedKey?{...allThemes[copiedKey]}:(type==='normal'?{...THEMES.cafe}:{...THEMES.hospital});
 
+  // 카테고리 직접 입력 처리
+  const catsInput=document.getElementById('atm-cats').value.trim();
+  const customCats=catsInput?catsInput.split(',').map(c=>c.trim()).filter(c=>c):null;
+  const finalCats=customCats||base.cats||['기본'];
+
+  // 카테고리를 직접 입력했으면 기본 메뉴는 비우기 (분류가 안 맞으니까)
+  let defaultItems;
+  if(customCats){
+    // 첫 카테고리에 샘플 1개만 (선생님이 직접 추가하도록)
+    defaultItems=[];
+  } else {
+    defaultItems=[...(base.defaultItems||[])];
+  }
+
   const newTheme={
     ...base,
     name:`${icon} ${name}`,
     sub:sub||`${name} 역할놀이를 시작해요!`,
     type,
     c1:col.c1, c2:col.c2, bg:col.bg, warm:col.warm,
-    // 복사 기반이면 메뉴도 복사, 아니면 기본 메뉴 유지
-    defaultItems: copiedKey ? [...(base.defaultItems||[])] : [...(base.defaultItems||[])],
+    cats:finalCats,
+    defaultItems,
   };
 
-  const custom=getCustomThemes();
+  const custom={...getCustomThemes()};
   custom[newKey]=newTheme;
   saveCustomThemes(custom);
   closeAddThemeModal();
-  initRoomScreen();
+  renderThemeScreen();
   showToast('✅ '+newTheme.name+' 추가됐어요!');
 }
 
@@ -812,8 +861,14 @@ async function selectTheme(key){
         setTimeout(()=>speak(`${val.num}${T.acceptSpeak||'번 주문이 접수됐습니다'}`+(val.name?`. ${val.name} 님`:'')),300);
       } else if(val.type==='ready'){
         playBell();
-        const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
-        setTimeout(()=>speak(`${val.num}${base}`+(val.name?`. ${val.name} 님`:'')),500);
+        let rtxt;
+        if(T.type!=='reception' && T.readyHead && T.readyTail && val.menu){
+          rtxt=`${val.num}${T.readyHead}${val.menu}${T.readyTail}`;
+        } else {
+          const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
+          rtxt=`${val.num}${base}`+(val.name?`. ${val.name} 님`:'');
+        }
+        setTimeout(()=>speak(rtxt),500);
       }
     });
   }
@@ -886,6 +941,7 @@ function buildTabs(){
 function changeRoom(){
   if(itemsUnsub){itemsUnsub();itemsUnsub=null;}
   if(ordersUnsub){ordersUnsub();ordersUnsub=null;}
+  if(customThemesUnsub){customThemesUnsub();customThemesUnsub=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('theme-screen').style.display='none';
   document.getElementById('room-screen').style.display='flex';
@@ -916,6 +972,11 @@ function showTab(tab){
 function emojiHTML(e,size='2.2rem'){
   if(e&&e.startsWith('data:')) return `<img src="${e}" style="width:${size};height:${size};border-radius:8px;object-fit:cover;vertical-align:middle">`;
   return `<span style="font-size:${size};line-height:1">${e||'?'}</span>`;
+}
+// 메뉴 카드용 - 이모지는 원형 배경, 이미지는 원형 크롭
+function menuEmojiHTML(e){
+  if(e&&e.startsWith('data:')) return `<img src="${e}">`;
+  return `<div class="emoji-circle">${e||'?'}</div>`;
 }
 
 // ── 상태바 ──
@@ -962,7 +1023,7 @@ function renderMenu(){
       const sel=cart[i.id]?'selected':'';
       const badge=cart[i.id]?`<span class="badge">${cart[i.id]}</span>`:'';
       html+=`<div class="menu-card ${sel}" onclick="addToCart(${i.id})">${badge}
-        <div class="emoji">${emojiHTML(i.emoji,'2.2rem')}</div>
+        <div class="emoji">${menuEmojiHTML(i.emoji)}</div>
         <div class="name">${i.name}</div>
         <div class="price">${i.price>0?i.price.toLocaleString()+'원':'무료'}</div></div>`;
     });
@@ -974,6 +1035,8 @@ function renderMenu(){
 function addToCart(id){
   cart[id]=(cart[id]||0)+1; updateFab(); renderMenu();
   const i=items.find(x=>x.id===id);
+  // 메뉴 이름 음성으로 읽어주기 (글자 모르는 유아용)
+  speak(i.name);
   showToast((i.emoji&&!i.emoji.startsWith('data:')?i.emoji:'')+' '+i.name+' 담았어요!');
 }
 
@@ -1024,7 +1087,7 @@ function confirmOrder(){
   setTimeout(()=>speak(`${num}${T.acceptSpeak}`),300);
   // 다른 기기에 소리 신호 전송
   if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'order',num,name:'',time:Date.now(),sender:_deviceId});
-  showToast('🔔 접수됐어요!'); showTab('waitlist');
+  showToast('🔔 접수됐어요!'); showTab('menu');
 }
 
 // ── 접수형 ──
@@ -1123,11 +1186,20 @@ function setStatus(id,status){
     document.getElementById('rb-pname').textContent=oName?'👤 '+oName:'';
     document.getElementById('ready-banner').classList.add('show');
     playBell();
-    const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
-    const txt=oName?`${oNum}${base}. ${oName} 님`:`${oNum}${base}`;
+    // 음성 메시지 구성
+    let txt;
+    if(T.type!=='reception' && T.readyHead && T.readyTail && o.selectedItems){
+      // 일반형: 메뉴 이름 읽어주기
+      const menuNames=o.selectedItems.map(i=>i.name+(i.qty>1?' '+i.qty+'개':'')).join(', ');
+      txt=`${oNum}${T.readyHead}${menuNames}${T.readyTail}`;
+    } else {
+      const base=T.readySpeak||'번 손님, 준비됐습니다. 찾아가세요';
+      txt=oName?`${oNum}${base}. ${oName} 님`:`${oNum}${base}`;
+    }
     setTimeout(()=>speak(txt),500);
-    // 다른 기기에 소리 신호 전송
-    if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'ready',num:oNum,name:oName,time:Date.now(),sender:_deviceId});
+    // 다른 기기에 소리 신호 전송 (메뉴 이름도 함께)
+    const menuStr=o.selectedItems?o.selectedItems.map(i=>i.name+(i.qty>1?' '+i.qty+'개':'')).join(', '):'';
+    if(fbDB) fbSet(fbRef(fbDB,`rooms/${ROOM}/themes/${KEY}/sound`),{type:'ready',num:oNum,name:oName,menu:menuStr,time:Date.now(),sender:_deviceId});
   }
 }
 function cancelOrder(id){
